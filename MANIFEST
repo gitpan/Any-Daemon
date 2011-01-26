@@ -1,0 +1,8 @@
+ChangeLog
+MANIFEST
+Makefile.PL
+README
+lib/Any/Daemon.pm
+lib/Any/Daemon.pod
+t/01use.t
+META.yml                                 Module meta-data (added by MakeMaker)
