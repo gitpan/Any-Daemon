@@ -1,17 +1,17 @@
 # Copyrights 2011 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 1.07.
+# Pod stripped from pm file by OODoc 2.00.
 use warnings;
 use strict;
 
 package Any::Daemon;
 use vars '$VERSION';
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 
 use Log::Report 'any-daemon';
-use POSIX       qw(setsid setuid setgid :sys_wait_h);
+use POSIX       qw(setsid :sys_wait_h);
 use English     qw/$EUID $EGID $PID/;
 use File::Spec  ();
 
@@ -32,26 +32,26 @@ sub init($)
 
     $self->{AD_pidfn} = $args->{pid_file};
 
-    if(my $user = $args->{user})
+    my $user = $args->{user};
+    if(defined $user)
     {   if($user =~ m/\D/)
-        {   $self->{AD_uid} = getpwnam $user
+        {   my $uid = $self->{AD_uid} = getpwnam $user;
+            defined $uid
                 or error __x"user {name} does not exist", name => $user;
         }
         else { $self->{AD_uid} = $user }
     }
 
-    if(my $group = $args->{group})
+    my $group = $args->{group};
+    if(defined $group)
     {   if($group =~ m/\D/)
-        {   $self->{AD_gid} = getgrnam $group
+        {   my $gid = $self->{AD_gid} = getgrnam $group;
+            defined $gid
                 or error __x"group {name} does not exist", name => $group;
         }
     }
 
-    if(my $wd = $args->{workdir})
-    {   -d $wd or mkdir $wd, 0700
-            or fault __x"cannot create working directory {dir}", dir => $wd;
-        $self->{AD_wd} = $wd;
-    }
+    $self->{AD_wd} = $args->{workdir};
     $self;
 }
 
@@ -74,26 +74,6 @@ sub run(@)
             or error __x"you need to start a dispatcher to send log to";
     }
 
-    my $uid = $self->{AD_uid};
-    if(defined $uid)
-    {   $uid==$EUID or setuid $uid
-            or fault __x"cannot switch to user-id {uid}", uid => $uid;
-    }
-    elsif($EUID==0)
-    {   warning __"running daemon as root is dangerous: please specify user";
-    }
-
-    my $gid = $self->{AD_gid};
-    if(defined $gid && $gid!=$EGID)
-    {   setgid $gid
-            or fault __x"cannot switch to group-id {gid}", gid => $gid;
-    }
-
-    if(my $wd = $self->{AD_wd})
-    {   chdir $wd
-            or fault __x"cannot change to working directory {dir}", dir=>$wd;
-    }
-
     my $pidfn = $self->{AD_pidfn};
     if(defined $pidfn)
     {   local *PIDF;
@@ -101,6 +81,29 @@ sub run(@)
         {   print PIDF "$PID\n";
             close PIDF;
         }
+    }
+
+    my $gid = $self->{AD_gid};
+    if(defined $gid && $gid!=$EGID)
+    {   $EGID = $gid
+            or fault __x"cannot switch to group-id {gid}", gid => $gid;
+    }
+
+    my $uid = $self->{AD_uid};
+    if(defined $uid)
+    {   $uid==$EUID or $EUID = $uid
+            or fault __x"cannot switch to user-id {uid}", uid => $uid;
+    }
+    elsif($EUID==0)
+    {   warning __"running daemon as root is dangerous: please specify user";
+    }
+
+    if(my $wd = $self->{AD_wd})
+    {   -d $wd or mkdir $wd, 0700
+            or fault __x"cannot create working directory {dir}", dir => $wd;
+
+        chdir $wd
+            or fault __x"cannot change to working directory {dir}", dir => $wd;
     }
 
     my $sid = setsid;

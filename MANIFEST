@@ -4,5 +4,6 @@ Makefile.PL
 README
 lib/Any/Daemon.pm
 lib/Any/Daemon.pod
+scripts/generic-startstop
 t/01use.t
 META.yml                                 Module meta-data (added by MakeMaker)

@@ -25,7 +25,7 @@ you can easily redirect error reports to any logging mechanism you like.
 
 The code for this module is in use for many different daemons, some
 with heavy load (a few dozen requests per second)  Have a look in
-the examples directory of the IO::Mux distribution for an extended
+the examples directory of the IOMux distribution for an extended
 example.
 
 =head1 METHODS
@@ -127,12 +127,12 @@ daemons as trigger for reconfiguration.
 
 =head1 SEE ALSO
 
-This module is part of Any-Daemon distribution version 0.10,
-built on January 26, 2011. Website: F<http://perl.overmeer.net/>
+This module is part of Any-Daemon distribution version 0.11,
+built on March 21, 2011. Website: F<http://perl.overmeer.net/>
 All modules in this suite:
 L</Any::Daemon>,
-L</IO::Mux>, and
-L</IO::Mux::HTTP>.
+L</IOMux>, and
+L</IOMux::HTTP>.
 
 Please post questions or ideas to F<perl@overmeer.net>
 
