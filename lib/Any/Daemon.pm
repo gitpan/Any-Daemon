@@ -7,7 +7,7 @@ use strict;
 
 package Any::Daemon;
 use vars '$VERSION';
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 
 use Log::Report 'any-daemon';
@@ -109,11 +109,19 @@ sub run(@)
     my $sid = setsid;
 
     my $reconfig    = $args{reconfig}    || \&_reconfig_daemon;
-    my $run_child   = $args{child_task}  || \&_child_task;
     my $kill_childs = $args{kill_childs} || \&_kill_childs;
     my $child_died  = $args{child_died}  || \&_child_died;
-
     my $max_childs  = $args{max_childs}  || 10;
+    my $child_task  = $args{child_task}  || \&_child_task; 
+
+    my $run_child   = sub
+       { eval { $child_task->(@_) };
+         if($@ && ! ref $@)
+         {   my $err = $@;
+             $err =~ s/\s+\z//s;
+             panic $err;
+         }
+       };
 
     $SIG{CHLD} = sub { $child_died->($max_childs, $run_child) };
     $SIG{HUP}  = sub
