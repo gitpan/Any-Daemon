@@ -1,4 +1,4 @@
-# Copyrights 2011 by Mark Overmeer.
+# Copyrights 2011-2012 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -7,13 +7,15 @@ use strict;
 
 package Any::Daemon;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 
-use Log::Report 'any-daemon';
-use POSIX       qw(setsid :sys_wait_h);
-use English     qw/$EUID $EGID $PID/;
-use File::Spec  ();
+use Log::Report   'any-daemon';
+
+use POSIX         qw(setsid :sys_wait_h);
+use English       qw/$EUID $EGID $PID/;
+use File::Spec    ();
+use Unix::SetUser qw/set_user/;
 
 use constant
   { SLEEP_FOR_SOME_TIME   =>  10
@@ -83,16 +85,12 @@ sub run(@)
         }
     }
 
-    my $gid = $self->{AD_gid};
-    if(defined $gid && $gid!=$EGID)
-    {   $EGID = $gid
-            or fault __x"cannot switch to group-id {gid}", gid => $gid;
-    }
-
-    my $uid = $self->{AD_uid};
-    if(defined $uid)
-    {   $uid==$EUID or $EUID = $uid
-            or fault __x"cannot switch to user-id {uid}", uid => $uid;
+    my $gid = $self->{AD_gid} || $EGID;
+    my $uid = $self->{AD_uid} || $EUID;
+    if($gid!=$EGID && $uid!=$EUID)
+    {   eval { set_user $uid, undef, $gid };
+        $@ and error __x"cannot switch to user/group to {uid}/{gid}: {err}"
+          , uid => $uid, gid => $gid, err => $@;
     }
     elsif($EUID==0)
     {   warning __"running daemon as root is dangerous: please specify user";
@@ -106,7 +104,7 @@ sub run(@)
             or fault __x"cannot change to working directory {dir}", dir => $wd;
     }
 
-    my $sid = setsid;
+    my $sid         = setsid;
 
     my $reconfig    = $args{reconfig}    || \&_reconfig_daemon;
     my $kill_childs = $args{kill_childs} || \&_kill_childs;
@@ -180,7 +178,7 @@ sub _kill_childs(@)
 
 # standard implementation for starting new childs.
 sub _child_died($$)
-{   my ($maxchilds, $run_child) = @_;
+{   my ($max_childs, $run_child) = @_;
 
     # Clean-up zombies
 
@@ -204,6 +202,7 @@ sub _child_died($$)
     my $silence_warn = 0;
 
   BIRTH:
+    while(keys %childs < $max_childs)
     {   my $kid = fork;
         unless(defined $kid)
         {   alert "cannot fork new children" unless $silence_warn++;

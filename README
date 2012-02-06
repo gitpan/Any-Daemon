@@ -1,5 +1,5 @@
-=== README for Any-Daemon version 0.12
-=   Generated on Mon Apr 18 13:55:31 2011 by OODoc 2.00
+=== README for Any-Daemon version 0.13
+=   Generated on Mon Feb  6 11:16:21 2012 by OODoc 2.00
 
 There are various ways to install this module:
 
@@ -9,16 +9,16 @@ There are various ways to install this module:
  (2) if you use Windows, have a look at http://ppm.activestate.com/
 
  (3) if you have downloaded this module manually (as root/administrator)
-       gzip -d Any-Daemon-0.12.tar.gz
-       tar -xf Any-Daemon-0.12.tar
-       cd Any-Daemon-0.12
+       gzip -d Any-Daemon-0.13.tar.gz
+       tar -xf Any-Daemon-0.13.tar
+       cd Any-Daemon-0.13
        perl Makefile.PL
        make          # optional
        make test     # optional
        make install
 
 For usage, see the included manual-pages or
-    http://search.cpan.org/dist/Any-Daemon-0.12/
+    http://search.cpan.org/dist/Any-Daemon-0.13/
 
 Please report problems to
     http://rt.cpan.org/Dist/Display.html?Queue=Any-Daemon
