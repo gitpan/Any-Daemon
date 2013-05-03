@@ -1,21 +1,20 @@
-# Copyrights 2011-2012 by Mark Overmeer.
+# Copyrights 2011-2013 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
-# Pod stripped from pm file by OODoc 2.00.
+# Pod stripped from pm file by OODoc 2.01.
 use warnings;
 use strict;
 
 package Any::Daemon;
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 
-use Log::Report   'any-daemon';
+use Log::Report  'any-daemon';
 
-use POSIX         qw(setsid :sys_wait_h);
+use POSIX         qw(setsid setuid :sys_wait_h);
 use English       qw/$EUID $EGID $PID/;
 use File::Spec    ();
-use Unix::SetUser qw/set_user/;
 
 use constant
   { SLEEP_FOR_SOME_TIME   =>  10
@@ -36,7 +35,7 @@ sub init($)
 
     my $user = $args->{user};
     if(defined $user)
-    {   if($user =~ m/\D/)
+    {   if($user =~ m/[^0-9]/)
         {   my $uid = $self->{AD_uid} = getpwnam $user;
             defined $uid
                 or error __x"user {name} does not exist", name => $user;
@@ -46,7 +45,7 @@ sub init($)
 
     my $group = $args->{group};
     if(defined $group)
-    {   if($group =~ m/\D/)
+    {   if($group =~ m/[^0-9]/)
         {   my $gid = $self->{AD_gid} = getgrnam $group;
             defined $gid
                 or error __x"group {name} does not exist", name => $group;
@@ -88,7 +87,13 @@ sub run(@)
     my $gid = $self->{AD_gid} || $EGID;
     my $uid = $self->{AD_uid} || $EUID;
     if($gid!=$EGID && $uid!=$EUID)
-    {   eval { set_user $uid, undef, $gid };
+    {   eval { if($] > 5.015007) { setuid $uid, $gid }
+               else
+               {   # in old versions of Perl, the uid and gid gets cached
+                   $EGID = $gid;
+                   $EUID = $uid;
+               }
+             };
         $@ and error __x"cannot switch to user/group to {uid}/{gid}: {err}"
           , uid => $uid, gid => $gid, err => $@;
     }

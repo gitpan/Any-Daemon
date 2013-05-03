@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 Any::Daemon - basic needs for a daemon
@@ -40,6 +42,9 @@ the examples directory!
 
 With C<new()> you provide the operating system integration OPTIONS,
 where C<run()> gets the activity related parameters: the real action.
+
+Be warned that the user, group, and workdir will not immediately be
+effected: delayed until L<run()|Any::Daemon/"Constructors">.
 
  -Option  --Default
   group     undef
@@ -127,8 +132,8 @@ daemons as trigger for reconfiguration.
 
 =head1 SEE ALSO
 
-This module is part of Any-Daemon distribution version 0.13,
-built on February 06, 2012. Website: F<http://perl.overmeer.net/>
+This module is part of Any-Daemon distribution version 0.14,
+built on May 03, 2013. Website: F<http://perl.overmeer.net/>
 All modules in this suite:
 L</Any::Daemon>,
 L</IOMux>, and
@@ -138,7 +143,7 @@ Please post questions or ideas to F<perl@overmeer.net>
 
 =head1 LICENSE
 
-Copyrights 2011-2012 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2011-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
