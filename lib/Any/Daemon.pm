@@ -7,12 +7,12 @@ use strict;
 
 package Any::Daemon;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.90';
 
 
 use Log::Report  'any-daemon';
 
-use POSIX         qw(setsid setuid :sys_wait_h);
+use POSIX         qw(setsid setuid setgid :sys_wait_h);
 use English       qw/$EUID $EGID $PID/;
 use File::Spec    ();
 
@@ -56,9 +56,22 @@ sub init($)
     $self;
 }
 
+#--------------------
+
+sub workdir() {shift->{AD_wd}}
+
+#--------------------
 
 sub run(@)
 {   my ($self, %args) = @_;
+
+    if(my $wd = $self->workdir)
+    {   -d $wd or mkdir $wd, 0700
+            or fault __x"cannot create working directory {dir}", dir => $wd;
+
+        chdir $wd
+            or fault __x"cannot change to working directory {dir}", dir => $wd;
+    }
 
     my $bg = exists $args{background} ? $args{background} : 1;
     if($bg)
@@ -87,7 +100,7 @@ sub run(@)
     my $gid = $self->{AD_gid} || $EGID;
     my $uid = $self->{AD_uid} || $EUID;
     if($gid!=$EGID && $uid!=$EUID)
-    {   eval { if($] > 5.015007) { setuid $uid, $gid }
+    {   eval { if($] > 5.015007) { setgid $gid; setuid $uid }
                else
                {   # in old versions of Perl, the uid and gid gets cached
                    $EGID = $gid;
@@ -99,14 +112,6 @@ sub run(@)
     }
     elsif($EUID==0)
     {   warning __"running daemon as root is dangerous: please specify user";
-    }
-
-    if(my $wd = $self->{AD_wd})
-    {   -d $wd or mkdir $wd, 0700
-            or fault __x"cannot create working directory {dir}", dir => $wd;
-
-        chdir $wd
-            or fault __x"cannot change to working directory {dir}", dir => $wd;
     }
 
     my $sid         = setsid;
@@ -140,7 +145,7 @@ sub run(@)
         $SIG{TERM} = $SIG{CHLD} = 'IGNORE';
         $max_childs = 0;
         $kill_childs->(keys %childs);
-        sleep 2;
+        sleep 2;  # give childs some time to stop
         kill TERM => -$sid;
         unlink $pidfn;
         my $intrnr = $signal eq 'INT' ? 2 : 9;

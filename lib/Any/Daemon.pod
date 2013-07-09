@@ -28,7 +28,7 @@ reports to any logging mechanism you like.
 
 The code for this module is in use for many different daemons, some
 with heavy load (a few dozen requests per second)  Have a look in
-the examples directory!
+the examples directory!  Also, you may like Any::Daemon::HTTP
 
 =head1 METHODS
 
@@ -36,15 +36,13 @@ the examples directory!
 
 =over 4
 
-=item $obj-E<gt>B<new>(OPTIONS)
-
 =item Any::Daemon-E<gt>B<new>(OPTIONS)
 
 With C<new()> you provide the operating system integration OPTIONS,
 where C<run()> gets the activity related parameters: the real action.
 
 Be warned that the user, group, and workdir will not immediately be
-effected: delayed until L<run()|Any::Daemon/"Constructors">.
+effected: delayed until L<run()|Any::Daemon/"Action">.
 
  -Option  --Default
   group     undef
@@ -77,6 +75,22 @@ when the daemon is run. The working directory does not get cleaned when
 the daemon stops.
 
 =back
+
+=back
+
+=head2 Accessors
+
+=over 4
+
+=item $obj-E<gt>B<workdir>()
+
+[0.90] assigned working directory of the daemon in the file-system.
+
+=back
+
+=head2 Action
+
+=over 4
 
 =item $obj-E<gt>B<run>(OPTIONS)
 
@@ -132,8 +146,8 @@ daemons as trigger for reconfiguration.
 
 =head1 SEE ALSO
 
-This module is part of Any-Daemon distribution version 0.14,
-built on May 03, 2013. Website: F<http://perl.overmeer.net/>
+This module is part of Any-Daemon distribution version 0.90,
+built on July 09, 2013. Website: F<http://perl.overmeer.net/>
 All modules in this suite:
 L</Any::Daemon>,
 L</IOMux>, and
