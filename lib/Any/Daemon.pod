@@ -146,8 +146,8 @@ daemons as trigger for reconfiguration.
 
 =head1 SEE ALSO
 
-This module is part of Any-Daemon distribution version 0.90,
-built on July 09, 2013. Website: F<http://perl.overmeer.net/>
+This module is part of Any-Daemon distribution version 0.91,
+built on October 04, 2013. Website: F<http://perl.overmeer.net/>
 All modules in this suite:
 L</Any::Daemon>,
 L</IOMux>, and
