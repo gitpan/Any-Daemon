@@ -7,7 +7,7 @@ use strict;
 
 package Any::Daemon;
 use vars '$VERSION';
-$VERSION = '0.91';
+$VERSION = '0.92';
 
 
 use Log::Report  'any-daemon';
@@ -147,7 +147,7 @@ sub run(@)
         $kill_childs->(keys %childs);
         sleep 2;  # give childs some time to stop
         kill TERM => -$sid;
-        unlink $pidfn;
+        unlink $pidfn if $pidfn;
         my $intrnr = $signal eq 'INT' ? 2 : 9;
         exit $intrnr+128;
       };
