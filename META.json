@@ -32,11 +32,11 @@
       },
       "runtime" : {
          "requires" : {
-            "Log::Report" : "0.9",
+            "Log::Report::Optional" : "1.00",
             "Test::More" : "0.8"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.92"
+   "version" : "0.93"
 }

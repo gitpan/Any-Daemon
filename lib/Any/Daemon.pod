@@ -126,6 +126,9 @@ are started later on. If the task is not specified, only a warning is
 produced. This may be useful when you start implementing the daemon:
 you do not need to care about the task to perform yet.
 
+The returned value of thise CODE is used as exit code of the child
+process, where zero means 'ok'.
+
 =item kill_childs => CODE
 
 The CODE terminates all running children, maybe to start new ones,
@@ -146,8 +149,8 @@ daemons as trigger for reconfiguration.
 
 =head1 SEE ALSO
 
-This module is part of Any-Daemon distribution version 0.92,
-built on October 15, 2013. Website: F<http://perl.overmeer.net/>
+This module is part of Any-Daemon distribution version 0.93,
+built on January 05, 2014. Website: F<http://perl.overmeer.net/>
 All modules in this suite:
 L</Any::Daemon>,
 L</IOMux>, and
@@ -157,7 +160,7 @@ Please post questions or ideas to F<perl@overmeer.net>
 
 =head1 LICENSE
 
-Copyrights 2011-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
+Copyrights 2011-2014 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

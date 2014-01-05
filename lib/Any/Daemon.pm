@@ -1,4 +1,4 @@
-# Copyrights 2011-2013 by [Mark Overmeer].
+# Copyrights 2011-2014 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.01.
@@ -7,10 +7,10 @@ use strict;
 
 package Any::Daemon;
 use vars '$VERSION';
-$VERSION = '0.92';
+$VERSION = '0.93';
 
 
-use Log::Report  'any-daemon';
+use Log::Report::Optional  'any-daemon';
 
 use POSIX         qw(setsid setuid setgid :sys_wait_h);
 use English       qw/$EUID $EGID $PID/;
@@ -65,7 +65,8 @@ sub workdir() {shift->{AD_wd}}
 sub run(@)
 {   my ($self, %args) = @_;
 
-    if(my $wd = $self->workdir)
+    my $wd = $self->workdir;
+    if($wd)
     {   -d $wd or mkdir $wd, 0700
             or fault __x"cannot create working directory {dir}", dir => $wd;
 
@@ -100,13 +101,16 @@ sub run(@)
     my $gid = $self->{AD_gid} || $EGID;
     my $uid = $self->{AD_uid} || $EUID;
     if($gid!=$EGID && $uid!=$EUID)
-    {   eval { if($] > 5.015007) { setgid $gid; setuid $uid }
+    {   chown $uid,$gid, $wd if $wd;
+
+        eval { if($] > 5.015007) { setgid $gid; setuid $uid }
                else
                {   # in old versions of Perl, the uid and gid gets cached
                    $EGID = $gid;
                    $EUID = $uid;
                }
              };
+
         $@ and error __x"cannot switch to user/group to {uid}/{gid}: {err}"
           , uid => $uid, gid => $gid, err => $@;
     }
@@ -123,19 +127,17 @@ sub run(@)
     my $child_task  = $args{child_task}  || \&_child_task; 
 
     my $run_child   = sub
-       { eval { $child_task->(@_) };
-         if($@ && ! ref $@)
-         {   my $err = $@;
-             $err =~ s/\s+\z//s;
-             panic $err;
-         }
-       };
+      { # unhandled errors are to be treated seriously.
+        my $rc = try { $child_task->(@_) };
+        if(my $e = $@->wasFatal) { $e->throw(reason => 'ALERT'); $rc = 1 }
+        $rc;
+      };
 
     $SIG{CHLD} = sub { $child_died->($max_childs, $run_child) };
     $SIG{HUP}  = sub
       { notice "daemon received signal HUP";
         $reconfig->(keys %childs);
-        $child_died->($max_childs, $run_child)
+        $child_died->($max_childs, $run_child);
       };
 
     $SIG{TERM} = $SIG{INT} = sub
@@ -162,7 +164,8 @@ sub run(@)
         open STDERR, '>', File::Spec->devnull;
     }
 
-    info "daemon started; proc=$PID uid=$EUID gid=$EGID childs=$max_childs";
+    info __x"daemon started; proc={proc} uid={uid} gid={gid} childs={max}"
+      , proc => $PID, uid => $EUID, gid => $EGID, max => $max_childs;
 
     $child_died->($max_childs, $run_child);
 
@@ -223,7 +226,8 @@ sub _child_died($$)
 
         if($kid==0)
         {   # new child
-            $SIG{HUP} = $SIG{TERM} = $SIG{INT} = sub {info 'bye'; exit 0};
+            $SIG{HUP} = $SIG{TERM} = $SIG{INT}
+               = sub {info 'child says bye'; exit 0};
 
             # I'll not handle my parent's kids!
             $SIG{CHLD} = 'IGNORE';
