@@ -20,4 +20,4 @@ no_index:
 requires:
   Log::Report::Optional: 1.00
   Test::More: 0.8
-version: 0.93
+version: 0.94

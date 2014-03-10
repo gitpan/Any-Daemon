@@ -6,8 +6,7 @@ use warnings;
 use strict;
 
 package Any::Daemon;
-use vars '$VERSION';
-$VERSION = '0.93';
+our $VERSION = '0.94';
 
 
 use Log::Report::Optional  'any-daemon';
@@ -127,7 +126,10 @@ sub run(@)
     my $child_task  = $args{child_task}  || \&_child_task; 
 
     my $run_child   = sub
-      { # unhandled errors are to be treated seriously.
+      { # re-seed the random number sequence per process
+        srand;
+
+        # unhandled errors are to be treated seriously.
         my $rc = try { $child_task->(@_) };
         if(my $e = $@->wasFatal) { $e->throw(reason => 'ALERT'); $rc = 1 }
         $rc;
@@ -231,9 +233,9 @@ sub _child_died($$)
 
             # I'll not handle my parent's kids!
             $SIG{CHLD} = 'IGNORE';
-            %childs = ();
+            %childs    = ();
 
-            my $rc = $run_child->();
+            my $rc     = $run_child->();
             exit $rc;
         }
 

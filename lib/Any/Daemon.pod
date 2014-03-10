@@ -36,9 +36,9 @@ the examples directory!  Also, you may like Any::Daemon::HTTP
 
 =over 4
 
-=item Any::Daemon-E<gt>B<new>(OPTIONS)
+=item Any::Daemon-E<gt>B<new>(%options)
 
-With C<new()> you provide the operating system integration OPTIONS,
+With C<new()> you provide the operating system integration %options,
 where C<run()> gets the activity related parameters: the real action.
 
 Be warned that the user, group, and workdir will not immediately be
@@ -92,7 +92,7 @@ the daemon stops.
 
 =over 4
 
-=item $obj-E<gt>B<run>(OPTIONS)
+=item $obj-E<gt>B<run>(%options)
 
 The C<run> method gets the activity related parameters.
 
@@ -149,8 +149,8 @@ daemons as trigger for reconfiguration.
 
 =head1 SEE ALSO
 
-This module is part of Any-Daemon distribution version 0.93,
-built on January 05, 2014. Website: F<http://perl.overmeer.net/>
+This module is part of Any-Daemon distribution version 0.94,
+built on March 10, 2014. Website: F<http://perl.overmeer.net/>
 All modules in this suite:
 L</Any::Daemon>,
 L</IOMux>, and
